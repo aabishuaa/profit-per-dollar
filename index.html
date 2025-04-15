@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profit Per Dollar Comparison</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <style>
+        :root {
+            --primary: #0c2552;
+            --primary-light: #1a3d75;
+            --primary-dark: #081a3e;
+            --primary-accent: #2a4f96;
+            --primary-pale: #e1eaff;
+            --secondary: #2d5cae;
+            --tertiary: #0a4c93;
+            --background: #f0f5ff;
+            --card-bg: #ffffff;
+            --text-primary: #1c2e40;
+            --text-secondary: #445770;
+            --highlight: #1e88e5;
+            --shadow: 0 10px 25px rgba(12, 37, 82, 0.15);
+            --border-color: #d1dfff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text-primary);
+            padding: 1.5rem;
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.75rem;
+            color: var(--primary);
+            position: relative;
+            padding-bottom: 0.75rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        h1::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 25%;
+            width: 50%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .grid-cols-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-cols-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .client-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 20px rgba(12, 37, 82, 0.12);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .client-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(12, 37, 82, 0.18);
+        }
+
+        .tier1-card {
+            border-top: 5px solid var(--primary);
+        }
+
+        .tier5-card {
+            border-top: 5px solid var(--secondary);
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        label {
+            display: block;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(12, 37, 82, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 10px rgba(12, 37, 82, 0.5);
+        }
+
+        .tier5-card input[type="range"]::-webkit-slider-thumb {
+            background: var(--secondary);
+        }
+
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        .results-card {
+            margin-top: 2.5rem;
+            background: var(--primary-pale);
+            border-radius: 10px;
+            padding: 1.75rem;
+            box-shadow: 0 10px 25px rgba(12, 37, 82, 0.12);
+            border: 1px solid var(--border-color);
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 8px 15px rgba(12, 37, 82, 0.1);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stats-tier1 {
+            border-top: 4px solid var(--primary);
+        }
+
+        .stats-tier5 {
+            border-top: 4px solid var(--secondary);
+        }
+
+        .stats-scaled {
+            border-top: 4px solid var(--tertiary);
+        }
+
+        .stats-label {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+        }
+
+        .stats-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+        }
+
+        .profit-per-million {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 15px rgba(12, 37, 82, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .profit-per-million:hover {
+            transform: translateY(-5px);
+        }
+
+        .profit-per-million-label {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .profit-per-million-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0.75rem 0;
+            color: var(--primary-dark);
+        }
+
+        .profit-compare {
+            font-size: 1rem;
+            color: var(--secondary);
+            font-weight: 600;
+            padding: 5px 10px;
+            background: rgba(45, 92, 174, 0.1);
+            border-radius: 15px;
+            display: inline-block;
+        }
+
+        .chart-container {
+            margin-top: 2.5rem;
+            height: 450px;
+            position: relative;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(12, 37, 82, 0.12);
+        }
+
+        .insight-card {
+            margin-top: 2.5rem;
+            background: var(--primary-pale);
+            border-radius: 10px;
+            padding: 1.5rem;
+            border-left: 5px solid var(--primary);
+            font-size: 1rem;
+            line-height: 1.7;
+            box-shadow: 0 8px 20px rgba(12, 37, 82, 0.1);
+        }
+
+        .insight-title {
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        strong {
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.35rem;
+            color: var(--primary);
+            margin-bottom: 1.25rem;
+            font-weight: 600;
+        }
+
+        .value-highlight {
+            display: inline-block;
+            color: var(--primary-dark);
+            font-weight: 700;
+            padding: 2px 3px;
+            background: rgba(12, 37, 82, 0.08);
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+
+            .grid-cols-2,
+            .grid-cols-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 1.25rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Profit Per Dollar Comparison</h1>
+
+        <!-- Controls -->
+        <div class="section-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20V10"></path>
+                <path d="M18 20V4"></path>
+                <path d="M6 20v-6"></path>
+            </svg>
+            Client Parameters
+        </div>
+
+        <div class="grid grid-cols-2">
+            <!-- Tier 1 -->
+            <div class="client-card tier1-card">
+                <h2>Tier 1 Client Settings</h2>
+                <label>Repo Amount (J$)</label>
+                <input id="tier1Amount" type="range" min="100000000" max="300000000" step="10000000">
+                <div class="range-labels">
+                    <span>J$100M</span><span id="tier1AmountVal">J$200M</span><span>J$300M</span>
+                </div>
+
+                <label>Spread (%)</label>
+                <input id="tier1Spread" type="range" min="2" max="6" step="0.1">
+                <div class="range-labels">
+                    <span>2%</span><span id="tier1SpreadVal">3.59%</span><span>6%</span>
+                </div>
+            </div>
+
+            <!-- Tier 5 -->
+            <div class="client-card tier5-card">
+                <h2>Tier 5 Client Settings</h2>
+                <label>Repo Amount (J$)</label>
+                <input id="tier5Amount" type="range" min="1000000" max="5000000" step="100000">
+                <div class="range-labels">
+                    <span>J$1M</span><span id="tier5AmountVal">J$2.5M</span><span>J$5M</span>
+                </div>
+
+                <label>Spread (%)</label>
+                <input id="tier5Spread" type="range" min="4" max="8" step="0.1">
+                <div class="range-labels">
+                    <span>4%</span><span id="tier5SpreadVal">5.78%</span><span>8%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-card">
+            <div class="section-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 3v18h18"></path>
+                    <path d="M18 17V9"></path>
+                    <path d="M13 17V5"></path>
+                    <path d="M8 17v-3"></path>
+                </svg>
+                Profit Analysis
+            </div>
+            <div class="grid grid-cols-3">
+                <div class="stats-card stats-tier1">
+                    <p class="stats-label">Tier 1 Total Profit</p>
+                    <p id="tier1Profit" class="stats-value">—</p>
+                </div>
+                <div class="stats-card stats-tier5">
+                    <p class="stats-label">Tier 5 Total Profit</p>
+                    <p id="tier5Profit" class="stats-value">—</p>
+                </div>
+                <div class="stats-card stats-scaled">
+                    <p class="stats-label">Scaled Tier 5 (J$10M)</p>
+                    <p id="scaledTier5Profit" class="stats-value">—</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2" style="margin-top: 1.5rem;">
+                <div class="profit-per-million">
+                    <p class="profit-per-million-label">Tier 1 Profit per Million</p>
+                    <p id="tier1PerMillion" class="profit-per-million-value">—</p>
+                </div>
+                <div class="profit-per-million">
+                    <p class="profit-per-million-label">Tier 5 Profit per Million</p>
+                    <p id="tier5PerMillion" class="profit-per-million-value">—</p>
+                    <p id="profitCompare" class="profit-compare"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="section-title" style="margin-top: 2.5rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="9" y1="21" x2="9" y2="9"></line>
+            </svg>
+            Visual Comparison
+        </div>
+        <div class="chart-container">
+            <canvas id="profitChart"></canvas>
+        </div>
+
+        <!-- Key Insight -->
+        <div class="insight-card">
+            <p class="insight-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                Key Insight:
+            </p>
+            <p id="keyInsightText">—</p>
+        </div>
+    </div>
+
+    <script>
+        const tier1AmountInput = document.getElementById("tier1Amount");
+        const tier1SpreadInput = document.getElementById("tier1Spread");
+        const tier5AmountInput = document.getElementById("tier5Amount");
+        const tier5SpreadInput = document.getElementById("tier5Spread");
+
+        const chartCtx = document.getElementById("profitChart").getContext("2d");
+        let chartInstance;
+
+        function formatCurrency(value) {
+            return value >= 1_000_000
+                ? `J$${(value / 1_000_000).toFixed(2)}M`
+                : `J$${(value / 1_000).toFixed(2)}K`;
+        }
+
+        function animateValue(element, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const value = start + progress * (end - start);
+                element.textContent = formatCurrency(value);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        function update() {
+            const tier1Amount = +tier1AmountInput.value;
+            const tier1Spread = +tier1SpreadInput.value;
+            const tier5Amount = +tier5AmountInput.value;
+            const tier5Spread = +tier5SpreadInput.value;
+
+            document.getElementById("tier1AmountVal").innerText = formatCurrency(tier1Amount);
+            document.getElementById("tier1SpreadVal").innerText = tier1Spread.toFixed(2) + "%";
+            document.getElementById("tier5AmountVal").innerText = formatCurrency(tier5Amount);
+            document.getElementById("tier5SpreadVal").innerText = tier5Spread.toFixed(2) + "%";
+
+            const tier1Profit = tier1Amount * (tier1Spread / 100);
+            const tier5Profit = tier5Amount * (tier5Spread / 100);
+            const tier1PerMillion = (tier1Profit / tier1Amount) * 1_000_000;
+            const tier5PerMillion = (tier5Profit / tier5Amount) * 1_000_000;
+            const scaledTier5Profit = 10_000_000 * (tier5Spread / 100);
+
+            const percentDiff = ((tier5PerMillion / tier1PerMillion - 1) * 100).toFixed(1);
+
+            // Get previous values to animate from
+            const previousTier1Profit = document.getElementById("tier1Profit").textContent === "—" ? 0 : parseCurrency(document.getElementById("tier1Profit").textContent);
+            const previousTier5Profit = document.getElementById("tier5Profit").textContent === "—" ? 0 : parseCurrency(document.getElementById("tier5Profit").textContent);
+            const previousScaledTier5Profit = document.getElementById("scaledTier5Profit").textContent === "—" ? 0 : parseCurrency(document.getElementById("scaledTier5Profit").textContent);
+
+            // Animate the value changes
+            animateValue(document.getElementById("tier1Profit"), previousTier1Profit, tier1Profit, 800);
+            animateValue(document.getElementById("tier5Profit"), previousTier5Profit, tier5Profit, 800);
+            animateValue(document.getElementById("scaledTier5Profit"), previousScaledTier5Profit, scaledTier5Profit, 800);
+
+            document.getElementById("tier1PerMillion").innerText = formatCurrency(tier1PerMillion);
+            document.getElementById("tier5PerMillion").innerText = formatCurrency(tier5PerMillion);
+            document.getElementById("profitCompare").innerHTML = `<span class="value-highlight">${percentDiff}%</span> more profitable per J$`;
+
+            document.getElementById("keyInsightText").innerHTML = `
+        While Tier 1 clients generate higher total profit (<strong>${formatCurrency(tier1Profit)}</strong>), 
+        Tier 5 clients are <strong>${percentDiff}%</strong> more profitable per dollar invested. 
+        If scaled to J$10M, a Tier 5 client would generate 
+        <strong>${formatCurrency(scaledTier5Profit)}</strong>, making smaller clients 
+        with higher spreads strategically valuable for growth.
+      `;
+
+            const chartData = {
+                labels: ["Tier 1 Client", "Tier 5 Client", "Tier 5 (Scaled)"],
+                datasets: [
+                    {
+                        label: "Profit per Million J$",
+                        data: [tier1PerMillion, tier5PerMillion, tier5PerMillion], // ERROR HERE
+                        backgroundColor: "rgba(12, 37, 82, 0.85)",
+                        borderColor: "#0c2552",
+                        borderWidth: 2,
+                        yAxisID: "y",
+                        borderRadius: 6,
+                    },
+                    {
+                        label: "Total Profit",
+                        data: [tier1Profit, tier5Profit, scaledTier5Profit],
+                        backgroundColor: "rgba(45, 92, 174, 0.85)",
+                        borderColor: "#2d5cae",
+                        borderWidth: 2,
+                        yAxisID: "y1",
+                        borderRadius: 6,
+                    }
+                ]
+            };
+
+            const options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: "index", intersect: false },
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: {
+                                family: "'Segoe UI', 'Inter', sans-serif",
+                                size: 13,
+                                weight: 'bold'
+                            },
+                            padding: 20
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        titleColor: '#0c2552',
+                        bodyColor: '#445770',
+                        titleFont: {
+                            family: "'Segoe UI', 'Inter', sans-serif",
+                            size: 15,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            family: "'Segoe UI', 'Inter', sans-serif",
+                            size: 14
+                        },
+                        padding: 14,
+                        borderColor: 'rgba(12, 37, 82, 0.2)',
+                        borderWidth: 1,
+                        caretSize: 8,
+                        cornerRadius: 8,
+                        displayColors: true,
+                        boxPadding: 8,
+                        callbacks: {
+                            label: function (context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                let value = context.parsed.y;
+                                label += formatCurrency(value);
+                                return label;
+                            }
+                        }
+                    },
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false,
+                        },
+                        ticks: {
+                            font: {
+                                family: "'Segoe UI', 'Inter', sans-serif",
+                                size: 13,
+                                weight: 'bold'
+                            },
+                            color: '#445770'
+                        }
+                    },
+                    y: {
+                        type: 'linear',
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: "Profit per Million J$",
+                            font: {
+                                family: "'Segoe UI', 'Inter', sans-serif",
+                                size: 13,
+                                weight: 'bold'
+                            },
+                            color: '#0c2552'
+                        },
+                        ticks: {
+                            callback: function (value) {
+                                return formatCurrency(value);
+                            },
+                            font: {
+                                family: "'Segoe UI', 'Inter', sans-serif",
+                                size: 12
+                            },
+                            color: '#445770'
+                        },
+                        grid: {
+                            color: 'rgba(12, 37, 82, 0.1)'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: "Total Profit (J$)",
+                            font: {
+                                family: "'Segoe UI', 'Inter', sans-serif",
+                                size: 13,
+                                weight: 'bold'
+                            },
+                            color: '#2d5cae'
+                        },
+                        ticks: {
+                            callback: function (value) {
+                                return formatCurrency(value);
+                            },
+                            font: {
+                                family: "'Segoe UI', 'Inter', sans-serif'",
+                                size: 12,
+                            },
+                            color: '#445770'
+                        },
+                        grid: { drawOnChartArea: false }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                }
+            };
+
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(chartCtx, { type: "bar", data: chartData, options });
+
+            // Add animations to chart elements
+            gsap.from(".chart-container", {
+                y: 20,
+                duration: 0.8,
+                ease: "power2.out",
+                delay: 0.2
+            });
+        }
+
+        function parseCurrency(text) {
+            // Remove currency symbol and handle M/K suffixes
+            const numericPart = text.replace(/[J$,]/g, '');
+            if (numericPart.includes('M')) {
+                return parseFloat(numericPart) * 1_000_000;
+            } else if (numericPart.includes('K')) {
+                return parseFloat(numericPart) * 1_000;
+            }
+            return parseFloat(numericPart);
+        }
+
+        tier1AmountInput.addEventListener("input", update);
+        tier1SpreadInput.addEventListener("input", update);
+        tier5AmountInput.addEventListener("input", update);
+        tier5SpreadInput.addEventListener("input", update);
+
+        // Initialize with animation for page load
+        tier1AmountInput.value = 200000000;
+        tier1SpreadInput.value = 3.59;
+        tier5AmountInput.value = 2500000;
+        tier5SpreadInput.value = 5.78;
+
+        // Animate elements on page load
+        document.addEventListener("DOMContentLoaded", function () {
+            gsap.from(".client-card", {
+                y: 20,
+                stagger: 0.2,
+                duration: 0.8,
+                ease: "power3.out"
+            });
+
+            gsap.from(".section-title", {
+                x: -20,
+                duration: 0.8,
+                ease: "power2.out",
+                delay: 0.3
+            });
+
+            gsap.from("h1", {
+                y: -20,
+                duration: 0.8,
+                ease: "power2.out"
+            });
+
+            setTimeout(update, 300);
+        });
+
+        // Run initial update for browsers that trigger DOMContentLoaded before this script runs
+        update();
+    </script>
+</body>
+
+</html>
